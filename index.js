@@ -68,6 +68,8 @@ const setup = async () => {
   let response = await axios.get('https://pokeapi.co/api/v2/pokemon?offset=0&limit=810');
   pokemons = response.data.results;
 
+  const totalCount = response.data.results.length;
+  document.getElementById('totalPokemon').textContent = totalCount;
 
   paginate(currentPage, PAGE_SIZE, pokemons)
   const numPages = Math.ceil(pokemons.length / PAGE_SIZE)
@@ -132,15 +134,10 @@ const setup = async () => {
 
 }
 
-// get total count of pokemon
-axios.get('https://pokeapi.co/api/v2/pokemon/')
-  .then(response => {
-    const totalCount = response.data.count;
-    document.getElementById('totalPokemon').textContent = totalCount;
-  })
-  .catch(error => {
-    console.log(error);
-  });
+
+
+
+
 const apiUrl = 'https://pokeapi.co/api/v2/type/';
 
 // Fetch the types from the API
@@ -170,29 +167,35 @@ fetch(apiUrl)
 
     // Add event listener to submit button
     // Add event listener to submit button
+    
     submitBtn.addEventListener('click', async () => {
       const selectedTypes = Array.from(document.querySelectorAll('input[name="type"]:checked'))
         .map(checkbox => checkbox.value);
 
       $('#pokeCards').empty();
-
-      // display up to 10 pokemon of selected types
+      let totalPokemon = 0; // initialize totalPokemon to 0
+      const pokemonUrls = [];
       for (const type of selectedTypes) {
         const res = await axios.get(`https://pokeapi.co/api/v2/type/${type}`);
-        const pokemonUrls = res.data.pokemon.slice(0, 10).map(pokemon => pokemon.pokemon.url);
-        for (const url of pokemonUrls) {
-          const res = await axios.get(url);
-          $('#pokeCards').append(`
-        <div class="pokeCard card" pokeName=${res.data.name}>
-          <h3>${res.data.name.toUpperCase()}</h3>
-          <img src="${res.data.sprites.front_default}" alt="${res.data.name}"/>
-          <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#pokeModal">
-            More
-          </button>
-        </div>
-      `);
-        }
+        const typePokemonUrls = res.data.pokemon.map(pokemon => pokemon.pokemon.url);
+        pokemonUrls.push(typePokemonUrls);
       }
+      const commonPokemonUrls = pokemonUrls.reduce((acc, urls) => acc.filter(url => urls.includes(url)));
+      totalPokemon = commonPokemonUrls.length; // set the totalPokemon to the number of common Pokemon
+      for (const url of commonPokemonUrls) {
+        const res = await axios.get(url);
+        $('#pokeCards').append(`
+    <div class="pokeCard card" pokeName=${res.data.name}>
+      <h3>${res.data.name.toUpperCase()}</h3>
+      <img src="${res.data.sprites.front_default}" alt="${res.data.name}"/>
+      <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#pokeModal">
+        More
+      </button>
+    </div>
+  `);
+      }
+      $('#totalPokemon').text(totalPokemon); // update the totalPokemon element with the total number of pokemon
     });
-  })
+  });
+  
 $(document).ready(setup)
