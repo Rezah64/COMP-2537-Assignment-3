@@ -28,11 +28,22 @@
   <!-- my files imports -->
   <script src="index.js"></script>
   <link rel="stylesheet" href="index.css">
+  
 </head>
-
+<style>
+  #typeFilter {
+  display: flex;
+  flex-direction: row;
+}
+</style>
 <body>
 
-  <h1>Showing 10 of <span id="totalPokemon"></span></h1>
+    <div id="typeFilter"></div>
+
+
+
+</div>
+  <h1>Showing <span id="totalPkemonPage"></span> of <span id="totalPokemon"></span></h1>
 
   <div id="pokeCards"></div>
 
@@ -54,13 +65,7 @@
       </div>
     </div>
   </div>
-<div id="typeGroup">
-  <label>Types:</label>
-  <br>
-  <!-- dynamically generated checkboxes will be inserted here -->
-  <div id="checkboxes"></div>
-  <button id="submitBtn">Submit</button>
-</div>
+  
   <div id="pagination"></div>
 
 
