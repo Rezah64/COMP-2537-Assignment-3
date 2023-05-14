@@ -68,6 +68,8 @@ const setup = async () => {
   let response = await axios.get('https://pokeapi.co/api/v2/pokemon?offset=0&limit=810');
   pokemons = response.data.results;
 
+ 
+
   const totalCount = response.data.results.length;
   document.getElementById('totalPokemon').textContent = totalCount;
   paginate(currentPage, PAGE_SIZE, pokemons)
@@ -77,6 +79,7 @@ const setup = async () => {
   // Fetch Pokemon types and display them as checkboxes
   const typeResponse = await axios.get('https://pokeapi.co/api/v2/type');
   types = typeResponse.data.results.map(type => type.name);
+ 
   const typeCheckboxes = types.map(type => `
     <div class="form-check">
       <input class="form-check-input typeCheckbox" type="checkbox" name="typeFilter" value="${type}">
@@ -91,23 +94,31 @@ const setup = async () => {
   `);
 
   // add event listener to type checkboxes
-$('body').on('click', '.typeCheckbox', function () {
-  const selectedTypes = $('input[name="typeFilter"]:checked').map((_, el) => el.value).get()
+  $('body').on('click', '.typeCheckbox', async function (e) {
+    const selectedTypes = $('input[name="typeFilter"]:checked').map((_, el) => el.value).get()
+    $('#pokeCards').empty()
+    if (selectedTypes.length === 0) {
+      paginate(currentPage, PAGE_SIZE, pokemons)
+    } else {
+      const filteredPokemons = await Promise.all(pokemons.map(async (pokemon) => {
+        const res = await axios.get(pokemon.url)
+        const pokemonTypes = res.data.types.map(type => type.type.name)
+        return {
+          ...pokemon,
+          types: pokemonTypes
+        }
+      })).then(pokemons => {
+        return pokemons.filter(pokemon => {
+          return selectedTypes.every(type => pokemon.types.includes(type))
+        })
+      })
+      paginate(currentPage, PAGE_SIZE, filteredPokemons)
+      updatePaginationDiv(currentPage, Math.ceil(filteredPokemons.length / PAGE_SIZE))
+      document.getElementById('totalPokemon').textContent = filteredPokemons.length;
+    }
+  })
 
-  if (selectedTypes.length === 0) {
-    // if no types are selected, show all pokemon cards
-    $('#pokeCards .pokeCard').show()
-  } else {
-    // hide all pokemon cards
-    $('#pokeCards .pokeCard').hide()
 
-    // filter and show only pokemon cards with selected types
-    selectedTypes.forEach((type) => {
-      console.log(`Showing ${type} cards`);
-      $(`#pokeCards .pokeCard:has(img[src*="${type}"])`).show()
-    });
-  }
-})
   // initialize filter
   
 
