@@ -99,6 +99,8 @@ const setup = async () => {
     $('#pokeCards').empty()
     if (selectedTypes.length === 0) {
       paginate(currentPage, PAGE_SIZE, pokemons)
+      updatePaginationDiv(currentPage, Math.ceil(pokemons.length / PAGE_SIZE))
+      document.getElementById('totalPokemon').textContent = pokemons.length;
     } else {
       const filteredPokemons = await Promise.all(pokemons.map(async (pokemon) => {
         const res = await axios.get(pokemon.url)
