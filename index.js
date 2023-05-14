@@ -43,24 +43,30 @@ const updatePaginationDiv = (currentPage, numPages) => {
 }
 
 const paginate = async (currentPage, PAGE_SIZE, pokemons) => {
-  selected_pokemons = pokemons.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE)
+  const start = (currentPage - 1) * PAGE_SIZE;
+  const end = currentPage * PAGE_SIZE;
+  const selected_pokemons = pokemons.slice(start, end);
 
-  $('#pokeCards').empty()
+  $('#pokeCards').empty();
   selected_pokemons.forEach(async (pokemon) => {
-    const res = await axios.get(pokemon.url)
+    const res = await axios.get(pokemon.url);
     $('#pokeCards').append(`
-      <div class="pokeCard card" pokeName=${res.data.name}   >
+      <div class="pokeCard card" pokeName=${res.data.name}>
         <h3>${res.data.name.toUpperCase()}</h3> 
-        <img src="${res.data.sprites.front_default}" alt="${res.data.name}"/>
+        <<img src="${res.data.sprites.front_default}" alt="${res.data.name}"/>
         <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#pokeModal">
           More
         </button>
-        </div>  
-        `)
-  })
-}
+      </div>  
+    `);
+  });
 
+  const numPokemonOnPage = selected_pokemons.length;
+  $('#totalPokemonPage').text(numPokemonOnPage);
 
+  const numPages = Math.ceil(pokemons.length / PAGE_SIZE);
+  updatePaginationDiv(currentPage, numPages);
+};
 
 
 const setup = async () => {
@@ -75,6 +81,8 @@ const setup = async () => {
   paginate(currentPage, PAGE_SIZE, pokemons)
   const numPages = Math.ceil(pokemons.length / PAGE_SIZE)
   updatePaginationDiv(currentPage, numPages)
+
+
 
   // Fetch Pokemon types and display them as checkboxes
   const typeResponse = await axios.get('https://pokeapi.co/api/v2/type');
